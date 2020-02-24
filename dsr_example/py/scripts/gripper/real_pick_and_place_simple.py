@@ -20,9 +20,6 @@ DR_init.__dsr__model = ROBOT_MODEL
 from DSR_ROBOT import *
 
 
-def gripper_send_data(send_data):
-    srv_gripper_send_data(send_data)
-
 
 def SET_ROBOT(id, model):
     ROBOT_ID = id; ROBOT_MODEL= model   
@@ -72,25 +69,31 @@ if __name__ == "__main__":
     velx = [50, 50]
     accx = [100, 100]
 
-    init_data = bytes(b'\0x09\0x10\0x03\0xE8\0x00\0x03\0x06\0x00\0x00\0x00\0x00\0x00\0x00\0x00\0x73\0x30')
-    activation_data = bytes(b'0x09\0x10\0x03\0xE8\0x00\0x03\0x06\0x01\0x00\0x00\0x00\0x00\0x00\0x72\0xE1')
-    open_data = bytes(b'0x09\0x10\0x03\0xE8\0x00\0x03\0x06\0x09\0x00\0x00\0x00\0xFF\0xFF\0x72\0x19')
-    close_data = bytes(b'0x09\0x10\0x03\0xE8\0x00\0x03\0x06\0x09\0x00\0x00\0xFF\0xFF\0xFF\0x42\0x29')
+    init_data = bytes(b'\x09\x10\x03\xE8\x00\x03\x06\x00\x00\x00\x00\x00\x00\x00\x73\x30')
+    #init_data = bytes(b'abcde')
+    activation_data = bytes(b'\x09\x10\x03\xE8\x00\x03\x06\x01\x00\x00\x00\x00\x00\x72\xE1')
+    open_data = bytes(b'\x09\x10\x03\xE8\x00\x03\x06\x09\x00\x00\x00\xFF\xFF\x72\x19')
+    close_data = bytes(b'\x09\x10\x03\xE8\x00\x03\x06\x09\x00\x00\xFF\xFF\xFF\x42\x29')
     
     time_cnt = 0
 
     while not rospy.is_shutdown():
 
         if time_cnt == 0:
-            gripper_send_data(init_data)
+            srv_robotiq_2f_open(init_data)
+            #gripper_send_data(init_data)
             rospy.sleep(4)
-            gripper_send_data(activation_data)
+            srv_robotiq_2f_open(activation_data)
+            #gripper_send_data(activation_data)
             rospy.sleep(4)
 
-    gripper_send_data(open_data)
-    rospy.sleep(4)
-    gripper_send_data(close_data)
-    rospy.sleep(4)    
+        srv_robotiq_2f_open(open_data)
+        #gripper_send_data(open_data)
+        rospy.sleep(4)
+        srv_robotiq_2f_open(close_data)
+        #gripper_send_data(close_data)
+        rospy.sleep(4)    
+        time_cnt = time_cnt + 1
 
         
 

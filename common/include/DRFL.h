@@ -1,8 +1,17 @@
+/*    ========================================================================
+    =                   Doosan Robot Framework Library                        =
+    =                   Copyright (c) Doosan Robotics.                        =   
+    =_______________________________________________________________________  =
+    = Title             : Doosan Robot Framwork Library                       =
+    = Author            : Lee Jeong-Woo<jeongwoo1.lee@doosan.com>             =
+    = Description       : -                                                   =
+    = Version           : 1.0 (GL010105) first release                        =
+    =                     1.1 (GF020300) add force control                    =
+    =                                    add coordinate sytem control function      =
+    =                                    fix GetCurrentTool, GetCurrentTCP function = 
+    ======================================================================== */
+
 /*********************************************************************
- *
- *  Doosan Robot Framework Library 
- * Author: Lee Jeong-Woo(jeongwoo1.lee@doosan.com)
- *
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2019, Doosan Robotics
@@ -82,9 +91,9 @@ namespace DRAFramework
         DRFL_API void _DestroyRobotControl(LPROBOTCONTROL pCtrl);
 
         // connection
-        ///DRFL_API bool _OpenConnection(LPROBOTCONTROL pCtrl, const char* lpszIpAddr = "192.168.137.100");
-        DRFL_API bool _OpenConnection(LPROBOTCONTROL pCtrl, const char* lpszIpAddr = "192.168.137.100", unsigned int usPort=12345);
-        DRFL_API void _CloseConnection(LPROBOTCONTROL pCtrl);
+        //ROS org DRFL_API bool _OpenConnection(LPROBOTCONTROL pCtrl, const char* lpszIpAddr = "192.168.137.100");
+		DRFL_API bool _OpenConnection(LPROBOTCONTROL pCtrl, const char* lpszIpAddr = "192.168.137.100", unsigned int usPort = 12345);
+  		DRFL_API void _CloseConnection(LPROBOTCONTROL pCtrl);
 
         ////////////////////////////////////////////////////////////////////////////
         // Attributes                                                             //
@@ -149,11 +158,22 @@ namespace DRAFramework
         DRFL_API void _SetOnMasteringNeed(LPROBOTCONTROL pCtrl, TOnMasteringNeedCB pCallbackFunc);
         DRFL_API void _SetOnDisconnected(LPROBOTCONTROL pCtrl, TOnDisconnectedCB pCallbackFunc);
         
+        DRFL_API LPROBOT_POSE _CalTrans(LPROBOTCONTROL pCtrl, float fSourcePos[NUM_TASK], float fOffset[NUM_TASK], COORDINATE_SYSTEM eSourceRef = COORDINATE_SYSTEM_BASE, COORDINATE_SYSTEM eTargetRef = COORDINATE_SYSTEM_BASE);
+        DRFL_API LPROBOT_POSE _CalIKin(LPROBOTCONTROL pCtrl, float fSourcePos[NUM_TASK], unsigned char iSolutionSpace);
+        DRFL_API LPROBOT_POSE _CalFKin(LPROBOTCONTROL pCtrl, float fSourcePos[NUM_JOINT]);
+        DRFL_API LPROBOT_TASK_POSE _CalCurrentTaskPose(LPROBOTCONTROL pCtrl, COORDINATE_SYSTEM eCoodType = COORDINATE_SYSTEM_BASE);
+        DRFL_API LPROBOT_POSE _CalDesiredTaskPose(LPROBOTCONTROL pCtrl, COORDINATE_SYSTEM eCoodType = COORDINATE_SYSTEM_BASE);
+        DRFL_API float _CalOrientationError(LPROBOTCONTROL pCtrl, TASK_AXIS eTaskAxis,  float fPosition1[NUM_TASK], float fPosition2[NUM_TASK]);
+        
+        DRFL_API float _MeasurePayload(LPROBOTCONTROL pCtrl);
+
+
         ////////////////////////////////////////////////////////////////////////////
         //  motion Operations                                                     //
         ////////////////////////////////////////////////////////////////////////////
         // basci motion(hold to run)
         DRFL_API bool _Jog(LPROBOTCONTROL pCtrl, JOG_AXIS eJogAxis, MOVE_REFERENCE eMoveReference, float fVelocity);
+        DRFL_API bool _MultiJog(LPROBOTCONTROL pCtrl, float fTargetPos[NUM_TASK], MOVE_REFERENCE eMoveReference, float fVelocity);
         DRFL_API bool _Home(LPROBOTCONTROL pCtrl, unsigned char bRun);
 
         // stop motion
@@ -203,6 +223,7 @@ namespace DRAFramework
 
         // set digital ouput on control-box
         DRFL_API bool _SetCtrlBoxDigitalOutput(LPROBOTCONTROL pCtrl, GPIO_CTRLBOX_DIGITAL_INDEX eGpioIndex, bool bOnOff);
+        DRFL_API bool _GetCtrlBoxDigitalOutput(LPROBOTCONTROL pCtrl, GPIO_CTRLBOX_DIGITAL_INDEX eGpioIndex);
         // get digital input on control-box
         DRFL_API bool _GetCtrlBoxDigitalInput(LPROBOTCONTROL pCtrl, GPIO_CTRLBOX_DIGITAL_INDEX eGpioIndex);
 
@@ -224,12 +245,12 @@ namespace DRAFramework
         // get modbus register
         DRFL_API unsigned short _GetModbusValue(LPROBOTCONTROL pCtrl, const char* lpszSymbol);
         // add modbus register
-        DRFL_API bool _ConfigCreateModbus(LPROBOTCONTROL pCtrl, const char* lpszSymbol, const char* lpszIpAddress, unsigned short nPort, MODBUS_REGISTER_TYPE eRegType, unsigned short iRegIndex, unsigned short nRegValue = 0);
+        DRFL_API bool _ConfigCreateModbus(LPROBOTCONTROL pCtrl, const char* lpszSymbol, const char* lpszIpAddress, unsigned short nPort, MODBUS_REGISTER_TYPE eRegType, unsigned short iRegIndex, unsigned short nRegValue = 0, unsigned char nSlaveId = 255);
         // del modbus register
         DRFL_API bool _ConfigDeleteModbus(LPROBOTCONTROL pCtrl, const char* lpszSymbol);
 
         ////////////////////////////////////////////////////////////////////////////
-        //  Configuration Operations                                               //
+        //  Configuration Operations                                              //
         ////////////////////////////////////////////////////////////////////////////
         // set tool(end-effector) information
         DRFL_API bool _SetCurrentTool(LPROBOTCONTROL pCtrl, const char* lpszSymbol);
@@ -247,7 +268,8 @@ namespace DRAFramework
         // del robot tcp information
         DRFL_API bool _ConfigDeleteTCP(LPROBOTCONTROL pCtrl, const char* lpszSymbol);
         // get robot tcp information
-        DRFL_API const char* _GetCurrentTCP(LPROBOTCONTROL pCtrl);        
+        DRFL_API const char* _GetCurrentTCP(LPROBOTCONTROL pCtrl);  
+        DRFL_API int _ServoOff(LPROBOTCONTROL pCtrl, STOP_TYPE eStopType);      
         
         ////////////////////////////////////////////////////////////////////////////
         //  drl program Operations                                                //
@@ -260,7 +282,36 @@ namespace DRAFramework
         DRFL_API bool _PlayDrlPause(LPROBOTCONTROL pCtrl);
         // program Resume
         DRFL_API bool _PlayDrlResume(LPROBOTCONTROL pCtrl);
+        // program speed
+        DRFL_API bool _PlayDrlSpeed(LPROBOTCONTROL pCtrl, float fSpeed);
 
+        ////////////////////////////////////////////////////////////////////////////
+        //  force control                                                        //
+        ////////////////////////////////////////////////////////////////////////////
+        
+        DRFL_API bool _EnterTaskCompliance(LPROBOTCONTROL pCtrl, float fTargetStiffness[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL, float fTargetTime = 0.f);
+        DRFL_API bool _SetTaskStiffness(LPROBOTCONTROL pCtrl, float fTargetStiffness[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL, float fTargetTime = 0.f);
+        DRFL_API bool _LeaveTaskCompliance(LPROBOTCONTROL pCtrl);
+        DRFL_API bool _SetDesiredForce(LPROBOTCONTROL pCtrl, float fTargetForce[NUM_TASK], unsigned char iTargetDirection[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL, float fTargetTime = 0.f, FORCE_MODE eForceMode = FORCE_MODE_ABSOLUTE);
+        DRFL_API bool _ResetDesiredForce(LPROBOTCONTROL pCtrl, float fTargetTime = 0.f);
+
+        DRFL_API bool _WaitForForceCondition(LPROBOTCONTROL pCtrl, FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL);
+        DRFL_API bool _WaitForPositionCondition(LPROBOTCONTROL pCtrl, FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL);
+        DRFL_API bool _WaitForPositionConditionRel(LPROBOTCONTROL pCtrl, FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, float fTargetPos[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL);
+        DRFL_API bool _WaitForOrientationCondition(LPROBOTCONTROL pCtrl, FORCE_AXIS eForceAxis, float fTargetMin[NUM_TASK], float fTargetMax[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL);
+        DRFL_API bool _WaitForOrientationConditionRel(LPROBOTCONTROL pCtrl, FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, float fTargetPos[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL);
+        DRFL_API bool _WaitForBoltTightening(LPROBOTCONTROL pCtrl, FORCE_AXIS eForceAxis, float fTargetTor, float fTimeout = 0.f);
+
+        ////////////////////////////////////////////////////////////////////////////
+        //  coordinate system control                                             //
+        ////////////////////////////////////////////////////////////////////////////
+
+        DRFL_API int _ConfigUserCoordinateSystem(LPROBOTCONTROL pCtrl, float fTargetPos[3][NUM_TASK], float fTargetOrg[3]);
+        DRFL_API int _ConfigUserCoordinateSystemEx(LPROBOTCONTROL pCtrl, float fTargetVec[2][3], float fTargetOrg[3]);
+        DRFL_API LPROBOT_POSE _TransformCoordinateSystem(LPROBOTCONTROL pCtrl, float fTargetPos[NUM_TASK], COORDINATE_SYSTEM eInCoordSystem, COORDINATE_SYSTEM eOutCoordSystem);
+
+
+        DRFL_API bool SystemShutDown();
 
 #ifdef __cplusplus
     };
@@ -278,8 +329,8 @@ namespace DRAFramework
         virtual ~CDRFL() { _DestroyRobotControl(_rbtCtrl);   }
 
         // connection
-        //bool OpenConnection(string strIpAddr = "192.168.137.100") { return _OpenConnection(_rbtCtrl, strIpAddr.c_str()); };
-        bool OpenConnection(string strIpAddr = "192.168.137.100", unsigned int usPort = 12345) { return _OpenConnection(_rbtCtrl, strIpAddr.c_str(), usPort); };
+        //ROS org bool OpenConnection(string strIpAddr = "192.168.137.100") { return _OpenConnection(_rbtCtrl, strIpAddr.c_str()); };
+        bool OpenConnection(string strIpAddr = "192.168.137.100", unsigned int usPort= 12345) { return _OpenConnection(_rbtCtrl, strIpAddr.c_str(), usPort); };
         void CloseConnection() { _CloseConnection(_rbtCtrl); }
 
 
@@ -310,6 +361,11 @@ namespace DRAFramework
         void SetOnProgramStopped(TOnProgramStoppedCB pCallbackFunc) { _SetOnProgramStopped(_rbtCtrl, pCallbackFunc); };
         // robot disconneted event
         void SetOnDisconnected(TOnDisconnectedCB pCallbackFunc) { _SetOnDisconnected(_rbtCtrl, pCallbackFunc); };
+
+        LPROBOT_POSE CalTrans(float fSourcePos[NUM_TASK], float fOffset[NUM_TASK], COORDINATE_SYSTEM eSourceRef = COORDINATE_SYSTEM_BASE, COORDINATE_SYSTEM eTargetRef = COORDINATE_SYSTEM_BASE){return _CalTrans(_rbtCtrl, fSourcePos, fOffset, eSourceRef, eTargetRef);};
+        LPROBOT_POSE CalIKin(float fSourcePos[NUM_TASK], unsigned char iSolutionSpace);
+        LPROBOT_POSE CalFKin(float fSourcePos[NUM_JOINT]);
+
         ////////////////////////////////////////////////////////////////////////////
         // Attributes                                                             //
         ////////////////////////////////////////////////////////////////////////////
@@ -349,7 +405,7 @@ namespace DRAFramework
 
         // get roobot system alarm
         LPLOG_ALARM GetLastAlarm() { return _GetLastAlarm(_rbtCtrl); };
-
+        int ServoOff(STOP_TYPE eStopType) { return _ServoOff(_rbtCtrl, eStopType); };
         
         ////////////////////////////////////////////////////////////////////////////
         //  access control                                                        //
@@ -363,6 +419,7 @@ namespace DRAFramework
         ////////////////////////////////////////////////////////////////////////////
         // basic control(hold to run)
         bool Jog(JOG_AXIS eJogAxis, MOVE_REFERENCE eMoveReference, float fVelocity) { return _Jog(_rbtCtrl, eJogAxis, eMoveReference, fVelocity); };
+        bool MultiJog(float fTargetPos[NUM_TASK], MOVE_REFERENCE eMoveReference, float fVelocity) { return _MultiJog(_rbtCtrl, fTargetPos, eMoveReference, fVelocity); };
         bool Home(unsigned char bRun) { return _Home(_rbtCtrl, bRun); };
 
         // motion control: move stop
@@ -412,6 +469,7 @@ namespace DRAFramework
         bool GetToolDigitalInput(GPIO_TOOL_DIGITAL_INDEX eGpioIndex) { return _GetToolDigitalInput(_rbtCtrl, eGpioIndex); };
         // set digital ouput on control-box
         bool SetCtrlBoxDigitalOutput(GPIO_CTRLBOX_DIGITAL_INDEX eGpioIndex, bool bOnOff) { return _SetCtrlBoxDigitalOutput(_rbtCtrl, eGpioIndex, bOnOff); };
+        bool GetCtrlBoxDigitalOutput(GPIO_CTRLBOX_DIGITAL_INDEX eGpioIndex) { return _GetCtrlBoxDigitalOutput(_rbtCtrl, eGpioIndex); };
         // get digital input on control-box
         bool GetCtrlBoxDigitalInput(GPIO_CTRLBOX_DIGITAL_INDEX eGpioIndex) { return _GetCtrlBoxDigitalInput(_rbtCtrl, eGpioIndex); };
 
@@ -432,7 +490,7 @@ namespace DRAFramework
         // get modbus register
         unsigned short GetModbusValue(string strSymbol) { return _GetModbusValue(_rbtCtrl, strSymbol.c_str()); };
         // add modbus register
-        bool ConfigCreateModbus(string strSymbol, string strIpAddress, unsigned short nPort, MODBUS_REGISTER_TYPE eRegType, unsigned short iRegIndex, unsigned short nRegValue = 0) { return _ConfigCreateModbus(_rbtCtrl, strSymbol.c_str(), strIpAddress.c_str(), nPort, eRegType, iRegIndex, nRegValue); };
+        bool ConfigCreateModbus(string strSymbol, string strIpAddress, unsigned short nPort, MODBUS_REGISTER_TYPE eRegType, unsigned short iRegIndex, unsigned short nRegValue = 0, unsigned char nSlaiveId = 255) { return _ConfigCreateModbus(_rbtCtrl, strSymbol.c_str(), strIpAddress.c_str(), nPort, eRegType, iRegIndex, nRegValue, nSlaiveId); };
         // del modbus register
         bool ConfigDeleteModbus(string strSymbol) { return _ConfigDeleteModbus(_rbtCtrl, strSymbol.c_str()); };
 
@@ -443,9 +501,7 @@ namespace DRAFramework
         // set tool(end-effector) information
         bool SetCurrentTool(string strSymbol) { return _SetCurrentTool(_rbtCtrl, strSymbol.c_str()); };
         // get tool(end-effector) information
-        string GetCurrentTool() { 
-         return string(_GetCurrentTool(_rbtCtrl));
-          };
+        string GetCurrentTool() { return string(_GetCurrentTool(_rbtCtrl)); };
         // add tool(end-effector) information
         bool ConfigCreateTool(string strSymbol, float fWeight, float fCog[3], float fInertia[NUM_TASK]) { return _ConfigCreateTool(_rbtCtrl, strSymbol.c_str(), fWeight, fCog, fInertia); };
         // del tool(end-effector) informaiton
@@ -474,7 +530,34 @@ namespace DRAFramework
         //program resume
         bool PlayDrlResume() { return _PlayDrlResume(_rbtCtrl); };
 
+
+        ////////////////////////////////////////////////////////////////////////////
+        //  force control                                                        //
+        ////////////////////////////////////////////////////////////////////////////
+
+        bool EnterTaskCompliance(float fTargetStiffness[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL, float fTargetTime = 0.f) { return _EnterTaskCompliance(_rbtCtrl, fTargetStiffness, eForceReference, fTargetTime); };
+        bool SetTaskStiffness(float fTargetStiffness[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL, float fTargetTime = 0.f) { return _SetTaskStiffness(_rbtCtrl, fTargetStiffness, eForceReference, fTargetTime); };
+        bool LeaveTaskCompliance() { return _LeaveTaskCompliance(_rbtCtrl); };
+        bool SetDesiredForce(float fTargetForce[NUM_TASK], unsigned char iTargetDirection[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL, float fTargetTime = 0.f, FORCE_MODE eForceMode = FORCE_MODE_ABSOLUTE) { return _SetDesiredForce(_rbtCtrl, fTargetForce, iTargetDirection, eForceReference, fTargetTime, eForceMode); };
+        bool ResetDesiredForce(float fTargetTime = 0.f) {return _ResetDesiredForce(_rbtCtrl, fTargetTime); };
+
+        bool WaitForForceCondition(FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL) { return _WaitForForceCondition(_rbtCtrl, eForceAxis, fTargetMin, fTargetMax, eForceReference); };
+        bool WaitForPositionCondition(FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL) { return _WaitForPositionCondition(_rbtCtrl, eForceAxis, fTargetMin, fTargetMax, eForceReference); };
+        bool WaitForPositionConditionRel(FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, float fTargetPos[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL) { return _WaitForPositionConditionRel(_rbtCtrl, eForceAxis, fTargetMin, fTargetMax, fTargetPos, eForceReference); };
+        bool WaitForOrientationCondition(FORCE_AXIS eForceAxis, float fTargetMin[NUM_TASK], float fTargetMax[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL) { return _WaitForOrientationCondition(_rbtCtrl, eForceAxis, fTargetMin, fTargetMax, eForceReference); };
+        bool WaitForOrientationConditionRel(FORCE_AXIS eForceAxis, float fTargetMin, float fTargetMax, float fTargetPos[NUM_TASK], COORDINATE_SYSTEM eForceReference = COORDINATE_SYSTEM_TOOL) { return _WaitForOrientationConditionRel(_rbtCtrl, eForceAxis, fTargetMin, fTargetMax, fTargetPos, eForceReference); };
+        bool WaitForBoltTightening(FORCE_AXIS eForceAxis, float fTargetTor, float fTimeout = 0.f) { return _WaitForBoltTightening(_rbtCtrl, eForceAxis, fTargetTor, fTimeout); };
+
+        ////////////////////////////////////////////////////////////////////////////
+        //  coordinate system control                                             //
+        ////////////////////////////////////////////////////////////////////////////
+
+        int ConfigUserCoordinateSystem(float fTargetPos[3][NUM_TASK], float fTargetOrg[3]) { return _ConfigUserCoordinateSystem(_rbtCtrl, fTargetPos, fTargetOrg); };
+        int ConfigUserCoordinateSystemEx(float fTargetVec[2][3], float fTargetOrg[3]) { return _ConfigUserCoordinateSystemEx(_rbtCtrl, fTargetVec, fTargetOrg); };
+        LPROBOT_POSE TransformCoordinateSystem(float fTargetPos[NUM_TASK], COORDINATE_SYSTEM eInCoordSystem, COORDINATE_SYSTEM eOutCoordSystem) { return _TransformCoordinateSystem(_rbtCtrl, fTargetPos, eInCoordSystem, eOutCoordSystem); };
+
     protected:
+
         LPROBOTCONTROL _rbtCtrl;
     };
 #endif

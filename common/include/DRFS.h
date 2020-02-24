@@ -1,8 +1,17 @@
+/*    ========================================================================
+    =                   Doosan Robot Framework Structure                      =
+    =                   Copyright (c) Doosan Robotics.                        =   
+    =_______________________________________________________________________  =
+    = Title             : Doosan Robot Framwork Structure                     =
+    = Author            : Lee Jeong-Woo<jeongwoo1.lee@doosan.com>             =
+    = Description       : -                                                   =
+    = Version           : 1.0 (GL010105) first release                        =
+    =                     1.1 (GF020300) add force control                    =
+    =                                    add coordinate sytem control function      =
+    =                                    fix GetCurrentTool, GetCurrentTCP function = 
+    ======================================================================== */
+
 /*********************************************************************
- *
- * Doosan Robot Framework Structure
- * Author: Lee Jeong-Woo(jeongwoo1.lee@doosan.com)
- *
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2019, Doosan Robotics
@@ -256,5 +265,14 @@ typedef struct _ROBOT_POSE
     float                       _fPosition[NUM_JOINT];
 
 } ROBOT_POSE, *LPROBOT_POSE;
+
+typedef struct _ROBOT_TASK_POSE
+{
+    /* target pose */
+    float                       _fTargetPos[NUM_TASK];
+    /*  solution space: 0 ~ 7 */
+    unsigned char               _iTargetSol;
+
+} ROBOT_TASK_POSE, *LPROBOT_TASK_POSE;
 
 #pragma pack()

@@ -1,6 +1,13 @@
-# [Doosan robotics](http://www.doosanrobotics.com/kr/)
+# [Doosan Robotics](http://www.doosanrobotics.com/kr/)
+[![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![support level: community](https://img.shields.io/badge/support%20level-community-lightgray.png)](http://rosindustrial.org/news/2016/10/7/better-supporting-a-growing-ros-industrial-software-platform)
+# *overview*
+
+[Doosan ROS Video](https://www.youtube.com/watch?v=mE24X5PhZ4M&feature=youtu.be)
 
 # *build* 
+##### *Doosan Robot ROS Package is implemented at ROS-Kinetic.*
     ### We recoomand the /home/<user_home>/catkin_ws/src
     cd ~/catkin_ws/src
     git clone https://github.com/doosan-robotics/doosan-robot
@@ -14,31 +21,35 @@
     
 __packages for mobile robot__
 
-    sudo apt-get install ros-kinetic-lms1xx ros-kinetic-interactive-marker-twist-server ros-kinetic-twist-mux ros-kinetic-imu-tools ros-kinetic-controller-manager ros-kinetic-robot-localization
+    sudo apt-get ros-kinetic-lms1xx ros-kinetic-interactive-marker-twist-server ros-kinetic-twist-mux ros-kinetic-imu-tools ros-kinetic-controller-manager ros-kinetic-robot-localization
 
 
 # *usage* <a id="chapter-3"></a>
-#### DRCF Emulator
-If you don`t have real doosan controller, you must excute our emulator. 
-Emulator has local IP(127.0.0.1) default port=12345. 
+#### Operation Mode
+##### Virtual Mode
+If you are driveing without a real robot, use __virtual mode__   
+When ROS launches in virtual mode, the emulator(DRCF) runs automatically.
+> (DRCF) location: doosan-robot/common/bin/ DRCF
+
 ```bash
-cd ~/catkin_ws/src/doosan-robot/common/bin/DRCF
-./DRCF64 <port>   ## 64bits OS
-or 
-./DRCF32 <port>   ## 32bits OS
-``` 
+roslaunch dsr_launcher single_robot_gazebo.launch mode:=virtual
+```
+_One emulator is required for each robot_
 
-> _$ ./DRCF64 12345_
-
-> <img src="https://user-images.githubusercontent.com/47092672/63494967-dc186d80-c4f9-11e9-967d-519656457499.jpg" width="80%">
-
-
+##### Real Mode
+Use __real mode__ to drive a real robot   
+The default IP of the robot controller is _192.168.127.100_ and the port is _12345_.
+```bash
+roslaunch dsr_launcher single_robot_gazebo.launch mode:=real host:=192.168.127.100 port:=12345
+```
+___
 #### dsr_description
 ```bash
 roslaunch dsr_description m0609.launch    
 roslaunch dsr_description m1013.launch color:=blue # Change Color
 roslaunch dsr_description m1509.launch gripper:=robotiq_2f # insert robotiq gripper
 roslaunch dsr_description m0617.launch color:=blue gripper:=robotiq_2f # change color & insert robotiq gripper
+roslaunch dsr_description a0509.launch 
 ```
 
 > $ _roslaunch dsr_description m1013.launch_ 
@@ -51,7 +62,7 @@ roslaunch dsr_description m0617.launch color:=blue gripper:=robotiq_2f # change 
 
 <img src="https://user-images.githubusercontent.com/47092672/55624467-f7037300-57e0-11e9-930a-ec929de3a0fa.png" width="70%">
 
-
+___
 #### dsr_moveit_config
 > ###### __arguments__
    > color:= ROBOT_COLOR <white / blue> defalut = white  
@@ -60,18 +71,30 @@ roslaunch dsr_description m0617.launch color:=blue gripper:=robotiq_2f # change 
     roslaunch moveit_config_m0617 m0617.launch
     roslaunch moveit_config_m1013 m1013.launch color:=blue
     roslaunch moveit_config_m1509 m1509.launch
+    roslaunch moveit_config_a0509 a0509.launch
     
     
 <img src="https://user-images.githubusercontent.com/47092672/55613994-fd84f100-57c6-11e9-97eb-49d1d7c9e32c.png" width="70%">
 
-
-
+##### *How to use MoveIt Commander*
+###### _You can run Moveit with CLI commands through the moveit commander package._
+###### _You can install the "moveit_commander" package using below command._
+    sudo apt-get insatll ros-kinetic-moveit-commander
+##### *MoveitCommander usage example*
+	ROS_NAMESPACE=/dsr01m1013 rosrun moveit_commander moveit_commander_cmdline.py robot_description:=/dsr01m1013/robot_description   
+###### *moveit commander CLI is executed.*    
+    > use arm 
+    > goal0 = [0 0 0 0 0 0]        # save the home position to variable "goal0"
+    > goal1 = [0 0 1.57 0 1.57 0]  # save the target position to varialbe "goal1" / radian
+    > go goal1                     # plan & excute (the robot is going to move target position)
+    > go goal0                     # paln & excute (the robot is going to move home position)
+___
 #### dsr_control _(default model:= m1013, default mode:= virtual)_
 > ###### __arguments__                    
 >host := ROBOT_IP defalut = 192.168.127.100   
 port := ROBOT_PORT default = 12345  
 mode := OPERATION MODE <virtual  /  real> defalut = virtual  
-model := ROBOT_MODEL <m0609  /  0617/  m1013  /  m1509> defalut = m1013  
+model := ROBOT_MODEL <m0609  /  0617/  m1013  /  m1509 / a0509> defalut = m1013  
 color := ROBOT_COLOR <white  /  blue> defalut = white  
 gripper := USE_GRIPPER <none  /  robotiq_2f> defalut = none  
 mobile := USE_MOBILE <none  /  husky> defalut = none  
@@ -82,7 +105,9 @@ mobile := USE_MOBILE <none  /  husky> defalut = none
     roslaunch dsr_control dsr_moveit.launch model:=m0617 mode:=virtual
     roslaunch dsr_control dsr_moveit.launch model:=m1013 mode:=virtual
     roslaunch dsr_control dsr_moveit.launch model:=m1509 mode:=virtual
-      
+    roslaunch dsr_control dsr_moveit.launch model:=a0509 mode:=virtual
+
+___
 #### dsr_launcher
 
 __If you don`t have real doosan controller, you must execute emulator before run dsr_launcer.__
@@ -90,7 +115,7 @@ __If you don`t have real doosan controller, you must execute emulator before run
    >host:= ROBOT_IP defalut = 192.168.127.100  ##Emulator IP = 127.0.0.1   
     port:= ROBOT_PORT default = 12345  
     mode:= OPERATION MODE <virtual  /  real> defalut = virtual  
-    model:= ROBOT_MODEL <m0609  /  0617/  m1013  /  m1509> defalut = m1013  
+    model:= ROBOT_MODEL <m0609  /  0617/  m1013  /  m1509 / a0509> defalut = m1013  
     color:= ROBOT_COLOR <white  /  blue> defalut = white  
     gripper:= USE_GRIPPER <none  /  robotiq_2f> defalut = none  
     mobile:= USE_MOBILE <none  /  husky> defalut = none  
@@ -101,7 +126,7 @@ __If you don`t have real doosan controller, you must execute emulator before run
     roslaunch dsr_launcher multi_robot_rviz.launch
     roslaunch dsr_launcher multi_robot_gazebo.launch model:=m0609
     roslaunch dsr_launcher multi_robot_rviz_gazebo.launch
-    
+___
 #### dsr_example
 ###### single robot
     <launch>
@@ -231,16 +256,15 @@ jointVelocity: [50.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 jointAcceleration: [50.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 radius: 0.0"
 ```
+___
 # manuals
 
-[Manual(kor)](http://wiki.ros.org/doosan-robotics?action=AttachFile&do=get&target=Doosan_Robotics_ROS_Manual_ver0.94_190619A%28Kor.%29.pdf)
+[Manual(Kor)](http://wiki.ros.org/doosan-robotics?action=AttachFile&do=get&target=Doosan_Robotics_ROS_Manual_ver0.971_20200218A%28Kor.%29.pdf)
 
 
-[Manual(Eng)](http://wiki.ros.org/doosan-robotics?action=AttachFile&do=get&target=Doosan_Robotics_ROS_Manual_ver0.94_190619A%28EN.%29.pdf)
+[Manual(Eng)](http://wiki.ros.org/doosan-robotics?action=AttachFile&do=get&target=Doosan_Robotics_ROS_Manual_ver0.971_20200218A%28EN.%29.pdf)
 
 # demo
-
-Please contact __ros.robotics@doosan.com__ for demo usage instructions below.
 
 ### Doosan-Robots In Gazebo
 

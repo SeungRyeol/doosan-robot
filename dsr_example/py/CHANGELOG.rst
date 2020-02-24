@@ -2,6 +2,29 @@
 Changelog for package dsr_example_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.4 (2020-02-18)
+------------------
+* update serial raw code
+* update serial_node
+* update test_modbus.py
+* Update A-Series
+* update A-series
+* update A-series
+* modify install path
+* modify install path
+* modify install path
+* Contributors: doosan-robotics
+
+1.0.2 (2020-01-07)
+------------------
+
+1.0.1 (2020-01-06)
+------------------
+* update install path
+* TEST
+* update 1.0.0
+* Contributors: doosan-robotics
+
 0.9.8 (2019-06-18)
 ------------------
 * change dsr_example_py dir

@@ -12,18 +12,20 @@ from sensor_msgs.msg import Joy
 sys.dont_write_bytecode = True
 sys.path.append( os.path.abspath(os.path.join(os.path.dirname(__file__),"../../../../common/imp")) ) # get import pass : DSR_ROBOT.py 
 
+
 # for single robot 
 ROBOT_ID     = "dsr01"
 ROBOT_MODEL  = "m1013"
 import DR_init
-m_joyAnalogFlag = False
-m_xyCompareFlag = False
-m_joyButtonFlag = False
-m_joyJogFlag = False
-m_joyJogVel = False
 DR_init.__dsr__id = ROBOT_ID
 DR_init.__dsr__model = ROBOT_MODEL
 from DSR_ROBOT import *
+
+m_joyAnalogFlag = False
+m_xyCompareFlag = False
+m_joyButtonFlag = False
+m_joyJogFlag = 0
+m_joyJogVel = 0.0
 
 def shutdown():
     print "shutdown time!"
@@ -109,7 +111,7 @@ def joy_cb(msg):
             m_joyJogFlag = JOG_AXIS_TASK_X
             m_joyJogVel  = -60
             
-        r.jog(m_joyJogFlag, MOVE_REFERNECE_TOOL, m_joyJogVel)
+        r.jog(m_joyJogFlag, MOVE_REFERENCE_TOOL, m_joyJogVel)
 
     elif m_joyAnalogFlag and m_joyJogFlag == -1 and not m_joyButtonFlag:
         if msg.axes[4] > 0:
