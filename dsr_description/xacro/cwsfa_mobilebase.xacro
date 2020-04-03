@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name = "mobilebase">
+
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1e-6" ixy="0.0" ixz="0.0"
+                    iyy="1e-6" iyz="0.0"
+                    izz="1e-6" />
+            </inertial>
+	</xacro:macro>
+
+    <link name = "mobile_base">
+        <visual>
+            <geometry>
+                <box size = "0.6 0.8 0.7"/>
+            </geometry>
+            <material name = "gray">
+                <color rgba = "0.8 0.8 0.8 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size = "0.6 0.8 0.7"/>
+            </geometry>
+        </collision>
+		<xacro:default_inertial mass="50"/>
+    </link>
+
+</robot>
